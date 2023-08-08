@@ -1,9 +1,10 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, Image, TouchableOpacity, Alert } from 'react-native';
 import { AuthContext } from '../context/Authcontext';
-import { GoogleSignin, GoogleSigninButton, statusCodes } from 'react-native-google-signin';
-import {LoginButton,AccessToken,GraphRequest,GraphRequestManager} from 'react-native-fbsdk';
-
+// import { GoogleSignin, GoogleSigninButton, statusCodes } from 'react-native-google-signin';
+// import {LoginButton,AccessToken,GraphRequest,GraphRequestManager} from 'react-native-fbsdk';
+import GoogleSignInManager from '../Services/LoginServices'
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
 const Separator = () => <View style={styles.separator} />;
 
 const Login = ({ navigation }) => {
@@ -15,17 +16,34 @@ const Login = ({ navigation }) => {
     Login(password, email);
   };
 
+
   useEffect(() => {
-    // Initialize GoogleSignin
-    GoogleSignin.configure({
-      webClientId: '893528037623-7f0nvoadsud413f16rqaknupduk3g6bh.apps.googleusercontent.com',
-      offlineAccess: true,
-      hostedDomain: '',
-      forceConsentPrompt: true,
-    });
-  }, []);
+    (async () => {
+      await GoogleSignInManager.configure()
+    })()
+  }, [])
+
+  // useEffect(() => {
+  //   // Initialize GoogleSignin
+  //   GoogleSignin.configure({
+  //     webClientId: '893528037623-7f0nvoadsud413f16rqaknupduk3g6bh.apps.googleusercontent.com',
+  //     offlineAccess: true,
+  //     hostedDomain: '',
+  //     forceConsentPrompt: true,
+  //   });
+  // }, []);
+
+
 
   const signInViaGoogle = async () => {
+    try {
+      const idToken = await GoogleSignInManager.signIn();
+      console.log('User signed in with Google:', idToken);
+    } catch (error) {
+      console.log('Google Sign-In Error:', error);
+    }
+
+    return
     try {
       await GoogleSignin.hasPlayServices({
         showPlayServicesUpdateDialog: true,
@@ -45,13 +63,25 @@ const Login = ({ navigation }) => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await googleSignInManager.signOut();
+      console.log('User signed out successfully.');
+    } catch (error) {
+      console.log('Error signing out:', error);
+    }
+  };
+
+
+
+
   return (
     <View style={{ flex: 1, justifyContent: "center", padding: 30 }}>
       <View style={{ alignItems: "center" }}>
         <Image source={require("../assests/login.jpg")} style={{ width: '100%', height: 300, transform: [{ rotate: '-5deg' }] }} />
       </View>
       <Separator
-       />
+      />
       <TextInput
         placeholder="Email"
         value={email}
@@ -67,22 +97,31 @@ const Login = ({ navigation }) => {
       />
       <Separator />
       <View style={{ width: "90%", marginLeft: 20 }}>
-      <TouchableOpacity onPress={loginHandler} style={{ shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 }}>
-        <Text style={{ backgroundColor: "#ae40b1", textAlign: "center", color: "white", fontSize: 15, borderRadius: 5, paddingVertical: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 }}>LOGIN</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity onPress={loginHandler} style={{ shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 }}>
+          <Text style={{ backgroundColor: "#ae40b1", textAlign: "center", color: "white", fontSize: 15, borderRadius: 5, paddingVertical: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84 }}>LOGIN</Text>
+        </TouchableOpacity>
+      </View>
 
       <Separator /><Separator />
-  <View style={{alignItems:"center", justifyContent:"center"}}><Text><GoogleSigninButton
+      <View style={{ alignItems: "center", justifyContent: "center" }}><Text>
+        <GoogleSigninButton
+          style={{ width: 192, height: 48 }}
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          onPress={signInViaGoogle}
+        />
+        {/* <GoogleSigninButton
         style={{ width: 200, height: 48 }}
-        size={GoogleSigninButton.Size.Wide}
-        color={GoogleSigninButton.Color.Dark}
+        // size={GoogleSigninButton.Size.Wide}
+        // color={GoogleSigninButton.Color.Dark}
         onPress={signInViaGoogle}
         disabled={false}
         
-      /></Text></View> 
-      
-        <Separator />
+      /> */}
+
+      </Text></View>
+
+      <Separator />
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
         <Text style={{ textAlign: "center" }}>Don't have an account? <Text style={{ textDecorationLine: "underline" }}>SIGNUP</Text></Text>
       </TouchableOpacity>
